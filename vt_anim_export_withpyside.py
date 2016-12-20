@@ -286,7 +286,6 @@ def set_index_img(img, moved_vtList, vt_uv):
                 imageWriteInt(imgData_ptr, size, u, v, value)
         else:
             value = moved_vtList.index(vtId) + 1
-            value = 255 * 256 * 256 * 256
             for UVs in vt_uv[vtId]:
                 u, v = UVs
                 imageWriteInt(imgData_ptr, size, u, v, value)
@@ -373,7 +372,7 @@ def generateTextures(startFrame, endFrame):
     data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
     index_img = create_index_img(64)
     set_index_img(index_img, vtIds, vt_uv)
-    index_img.save('C:/mypy/indexImageTest.png', 'PNG')
+    index_img.save('C:/mypy/indexImageTest.png')
 
     data = buffer_resort(data)
     vtId_size = len(vtIds)
@@ -381,5 +380,5 @@ def generateTextures(startFrame, endFrame):
     data_img_size = data_image_size(frameNum, vtId_size)
     data_img = create_data_img(data_img_size)
     set_data_img(data_img, frameNum, vtId_size, data, vtIds)
-    data_img.save('C:/mypy/dataImageTest.png', 'PNG')
+    data_img.save('C:/mypy/dataImageTest.png')
     return
