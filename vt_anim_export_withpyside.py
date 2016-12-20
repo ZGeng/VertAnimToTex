@@ -9,17 +9,16 @@ import math
 from PySide import QtGui
 QImage = QtGui.QImage
 
-shapeNode = None
 Epsilon = 1e-6
 
 
 # get selection shape
 def get_sel_shape():
+    shapeNode = None
     try:
         shapeNode = pm.selected()[0].getShape()
     except AttributeError:
         print "Please select one mesh"
-        shapeNode = None
     return shapeNode
 
 
@@ -101,16 +100,17 @@ def vt_info_list(shapeNode, tangent_ids, tangentList):
     for vt_id, vertex in enumerate(vertexs):
         position = vertex.getPosition(space="object")
 
-        Us, Vs, FaceIds = vertex.getUVs()
-        UVs = zip(Us, Vs)
-        # remove duplicate uvs
-        UVlist = list(set(UVs))
+        # Do not need get uvs every frame
+        # Us, Vs, FaceIds = vertex.getUVs()
+        # UVs = zip(Us, Vs)
+        # # remove duplicate uvs
+        # UVlist = list(set(UVs))
 
         normal = vertex.getNormal(space="object")  # one or more?
         tangent = get_per_vertex_tangent(tangentList, tangent_ids,
                                          vt_id, normal)
         # build a map
-        info = {"Position": position, "UV": UVlist,
+        info = {"Position": position,
                 "Normal": normal, "Tangent": tangent}
         vt_infos.append(info)
     return vt_infos
@@ -337,10 +337,6 @@ def indexImageTest(startFrame, endFrame):
     # print vt_uv
     data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
     print type(vtIds)
-    # print data
-    # UList, VList = get_UVList(shapeNode)
-    # del_index = [i for i in range(size) not in vtIds]
-    # print vtIds
     img = create_index_img(64)
     set_index_img(img, vtIds, vt_uv)
 
@@ -353,7 +349,6 @@ def dataImageTest(startFrame, endFrame):
     data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
     data = buffer_resort(data)
     vtId_size = len(vtIds)
-    print vtId_size
     frameNum = endFrame - startFrame + 1
     img_size = data_image_size(frameNum, vtId_size)
     img = create_data_img(img_size)
@@ -369,3 +364,22 @@ def dataTest(startFrame, endFrame):
     new_data = buffer_resort(data)
     new_data = [j for i, j in enumerate(new_data) if i in vtIds]
     return len(new_data)
+
+
+def generateTextures(startFrame, endFrame):
+    shapeNode = get_sel_shape()
+    vt_uv = vt_uv_map(shapeNode)  # result is UV lists map
+    # print vt_uv
+    data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
+    index_img = create_index_img(64)
+    set_index_img(index_img, vtIds, vt_uv)
+    index_img.save('C:/mypy/indexImageTest.png', 'PNG')
+
+    data = buffer_resort(data)
+    vtId_size = len(vtIds)
+    frameNum = endFrame - startFrame + 1
+    data_img_size = data_image_size(frameNum, vtId_size)
+    data_img = create_data_img(data_img_size)
+    set_data_img(data_img, frameNum, vtId_size, data, vtIds)
+    data_img.save('C:/mypy/dataImageTest.png', 'PNG')
+    return
