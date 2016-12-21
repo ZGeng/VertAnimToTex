@@ -3,7 +3,7 @@ import pymel.core as pm
 import maya.OpenMaya as om
 import maya.OpenMayaUI as omui
 from shiboken import wrapInstance
-import vt_anim_export as vae
+import vt_anim_export_withpyside as vae
 import os
 
 
@@ -25,6 +25,9 @@ def get_maya_window():
 @QtCore.Slot(object)
 def exportTexCallback(values):
     # vae.createTex(*values)
+    vae.generateTextures(*values)
+    print "success"
+
     def test(name, start, end, size, path):
         print name
         print start
@@ -118,7 +121,7 @@ class UILayout(QtGui.QMainWindow):
         return path
 
     def updateExportedData(self):
-        self.exportedData[0] = self.elements["objectLable"].text()
+        self.exportedData[0] = self.dagPath
         self.exportedData[1] = self.elements["startFrame"].value()
         self.exportedData[2] = self.elements["endFrame"].value()
         self.exportedData[3] = self.elements["indexTexSize"].currentIndex()
