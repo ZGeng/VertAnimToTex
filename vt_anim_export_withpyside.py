@@ -22,20 +22,6 @@ def get_sel_shape():
     return shapeNode
 
 
-def get_vtList(shapeNode):
-    # the simple one just use pymel
-    # will change into api function
-    pointList = shapeNode.getPoints()
-    return pointList
-
-
-def get_UVList(shapeNode):
-    # the simple one just use pymel
-    # will change into api function for speed
-    UVList = shapeNode.getUVs()
-    return UVList
-
-
 def vt_uv_map(shapeNode):
     # vertex id as key and UVs id list as value
     # will change into api function
@@ -48,20 +34,6 @@ def vt_uv_map(shapeNode):
         UVs = zip(Us, Vs)
         vt_UV[vt_id] = list(set(UVs))  # remove duplicate
     return vt_UV
-
-
-def get_NormalList(shapeNode):
-    return [vtx.getNormal() for vtx in shapeNode.vtx]
-
-
-def get_vertex_tangent(vt, vtId, shapeNode, normal):
-    total = pm.datatypes.Vector()
-    for face in vt.connectedFaces():
-        total += shapeNode.getFaceVertexTangent(face.currentItemIndex(), vtId)
-    total.normalize()
-    # Orth with Gram_Schmidt method
-    tangent = total - normal * total.dot(normal)
-    return tangent
 
 
 def get_vertex_tangent_ids(shapeNode):
@@ -84,27 +56,12 @@ def get_per_vertex_tangent(tangentList, tangent_ids, vt_id, normal):
     return tangent
 
 
-def get_TangentList(shapeNode):
-    tangentList = []
-    for vt_id, vertex in enumerate(shapeNode.vtx):
-        normal = vertex.getNormal()
-        tangent = get_vertex_tangent(vertex, vt_id, shapeNode, normal)
-        tangentList.append(tangent)
-    return tangentList
-
-
 def vt_info_list(shapeNode, tangent_ids, tangentList):
     vt_infos = []
     vertexs = shapeNode.vtx
     # iterate throgh all the vertex
     for vt_id, vertex in enumerate(vertexs):
         position = vertex.getPosition(space="object")
-
-        # Do not need get uvs every frame
-        # Us, Vs, FaceIds = vertex.getUVs()
-        # UVs = zip(Us, Vs)
-        # # remove duplicate uvs
-        # UVlist = list(set(UVs))
 
         normal = vertex.getNormal(space="object")  # one or more?
         tangent = get_per_vertex_tangent(tangentList, tangent_ids,
@@ -177,10 +134,11 @@ def get_dis_buffer(startFrame, endFrame, shapeNode):
 
 
 # post buffer clean up
-
 def buffer_resort(data):
     return zip(*data)  # remap data
 
+
+# ---------------------VECTOR-OPERATION---------------------------#
 
 def vectorDiff(v1, v2):
     size = len(v1)
@@ -197,6 +155,9 @@ def vectorEqualZero(v):
     for value in v:
         total += value * value
     return total <= Epsilon
+
+
+# -------------------PIXEL-CONVERTION-----------------------------#
 
 
 def convert_vector_to_argb(v):
@@ -241,7 +202,6 @@ def imageWriteInt(imgData_ptr, size, u, v, value):
         # not modify the imgData pointer
     except:
         print x, y
-
     return
 
 
@@ -319,7 +279,6 @@ def set_data_img(img, frameNum, vtNum, bufferData, vtIds):
             imgData_ptr[currentPosition * 4 + 8:
                         currentPosition * 4 + 12] = data["Tangent"]
             currentPosition += 3
-
     # And last pixel, write the frameNum and vtId size data
     vt_size = len(vtIds)
     # convert 2 int into RGBA
@@ -329,6 +288,29 @@ def set_data_img(img, frameNum, vtNum, bufferData, vtIds):
 
     return
 
+# ------------------MAIN-TEX-GENRATOR----------------------------#
+
+
+def generateTextures(startFrame, endFrame):
+    shapeNode = get_sel_shape()
+    vt_uv = vt_uv_map(shapeNode)  # result is UV lists map
+    # print vt_uv
+    data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
+    index_img = create_index_img(64)
+    set_index_img(index_img, vtIds, vt_uv)
+    index_img.save('C:/mypy/indexImageTest.png')
+
+    data = buffer_resort(data)
+    vtId_size = len(vtIds)
+    frameNum = endFrame - startFrame + 1
+    data_img_size = data_image_size(frameNum, vtId_size)
+    data_img = create_data_img(data_img_size)
+    set_data_img(data_img, frameNum, vtId_size, data, vtIds)
+    data_img.save('C:/mypy/dataImageTest.png')
+    return
+
+
+# ----------------TEST-FUNCTIONS-------------------------------#
 
 def indexImageTest(startFrame, endFrame):
     shapeNode = get_sel_shape()
@@ -363,22 +345,3 @@ def dataTest(startFrame, endFrame):
     new_data = buffer_resort(data)
     new_data = [j for i, j in enumerate(new_data) if i in vtIds]
     return len(new_data)
-
-
-def generateTextures(startFrame, endFrame):
-    shapeNode = get_sel_shape()
-    vt_uv = vt_uv_map(shapeNode)  # result is UV lists map
-    # print vt_uv
-    data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
-    index_img = create_index_img(64)
-    set_index_img(index_img, vtIds, vt_uv)
-    index_img.save('C:/mypy/indexImageTest.png')
-
-    data = buffer_resort(data)
-    vtId_size = len(vtIds)
-    frameNum = endFrame - startFrame + 1
-    data_img_size = data_image_size(frameNum, vtId_size)
-    data_img = create_data_img(data_img_size)
-    set_data_img(data_img, frameNum, vtId_size, data, vtIds)
-    data_img.save('C:/mypy/dataImageTest.png')
-    return
