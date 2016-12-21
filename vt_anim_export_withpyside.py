@@ -291,22 +291,25 @@ def set_data_img(img, frameNum, vtNum, bufferData, vtIds):
 # ------------------MAIN-TEX-GENRATOR----------------------------#
 
 
-def generateTextures(startFrame, endFrame):
-    shapeNode = get_sel_shape()
+indexSize = [32, 64, 128, 256, 512, 1024]
+
+
+def generateTextures(shapeNode, start, end, size_index, path):
     vt_uv = vt_uv_map(shapeNode)  # result is UV lists map
+    name = shapeNode.name(fullPath=False)
     # print vt_uv
-    data, vtIds = get_dis_buffer(startFrame, endFrame, shapeNode)
-    index_img = create_index_img(64)
+    data, vtIds = get_dis_buffer(start, end, shapeNode)
+    index_img = create_index_img(indexSize[size_index])
     set_index_img(index_img, vtIds, vt_uv)
-    index_img.save('C:/mypy/indexImageTest.png')
+    index_img.save('%s%s_index.png' % (path, name))
 
     data = buffer_resort(data)
     vtId_size = len(vtIds)
-    frameNum = endFrame - startFrame + 1
+    frameNum = end - start + 1  # if end smaller than start raise error
     data_img_size = data_image_size(frameNum, vtId_size)
     data_img = create_data_img(data_img_size)
     set_data_img(data_img, frameNum, vtId_size, data, vtIds)
-    data_img.save('C:/mypy/dataImageTest.png')
+    data_img.save('%s%s_data.png' % (path, name))
     return
 
 
