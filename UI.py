@@ -81,7 +81,7 @@ class UILayout(QtGui.QMainWindow):
 
     def __init__(self, parent=get_maya_window()):
         super(UILayout, self).__init__(parent)
-        self.setWindowTitle('VertexAnimationExporter')
+        self.setWindowTitle('VertAnimToTex')
         self.setFixedSize(350, 200)
         self.elements = dict()
         self.container = QtGui.QWidget(self)
@@ -140,7 +140,7 @@ def setupElement(uiWindow):
         fileButton.style().standardIcon(QtGui.QStyle.SP_DirIcon))
     indexTexSize = uiWindow.elements["indexTexSize"]
     indexTexSize.addItems(["32*32", "64*64", "128*128",
-                           "256*256", "512*512", "1024*1024"])
+                           "256*256", "512*512", "1024*1024","2048*2048"])
     indexTexSize.setCurrentIndex(1)
 
 
