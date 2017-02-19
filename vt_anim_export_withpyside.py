@@ -7,6 +7,7 @@ import pymel.core as pm
 from maya import OpenMaya
 import math
 from PySide import QtGui
+pm_Color = pm.datatypes.Color
 QImage = QtGui.QImage
 
 Epsilon = 1e-6
@@ -116,8 +117,8 @@ def get_dis_buffer(startFrame, endFrame, shapeNode):
             result.append(dis_info)
 
             if ((not vectorEqualZero(pos_trans)) or
-               (not vectorEqualZero(normal_trans)) or
-               (not vectorEqualZero(tangent_trans))):
+               (not vectorEqualZero(normal_trans))): # or
+               # (not vectorEqualZero(tangent_trans))):
                 moved_vt_id.add(vt_id)  # modify the outside list
 
         return result
@@ -229,23 +230,47 @@ def create_index_img(size=32):
     img.fill(0)
     return img
 
+def convert_int_to_color(num):
+    R = num // (256 * 256)
+    if R > 255:
+        R = 255
+    G = (num - R * 256 * 256) // 256
+    B = num - R * 256 * 256 - G * 256
+    return pm_Color([R/255.0, G/255.0, B/255.0, 1.0])
 
-def set_index_img(img, moved_vtList, vt_uv):
+
+def set_index_img(shapeNode, img, moved_vtList, vt_uv):
     # get the index in the moved_vt
     # image size
     size = img.width()  # assume width equals height
     imgData_ptr = img.bits()  # load img data
     # debug to print out all the buffer data
+    vertexs = shapeNode.vtx
 
-    for vtId in vt_uv:
+    for vtId in vt_uv: # vt_uv is a dict
         if vtId not in moved_vtList:
             # write to the empty cell
+            # value = 255 * 256 * 256 * 256
             value = 0
+
+            # set vertex color
+            vt_color = pm_Color([0.0, 0.0, 0.0, 0.0])
+            vertexs[vtId].setColor(vt_color)
+
+
             for UVs in vt_uv[vtId]:  # this can wrap into imageWrite Function
                 u, v = UVs
                 imageWriteInt(imgData_ptr, size, u, v, value)
         else:
+
             value = moved_vtList.index(vtId) + 1
+
+            # set vertex color
+            vt_color = convert_int_to_color(value)
+            vertexs[vtId].setColor(vt_color)
+
+            
+            value += 255 * 256 * 256 * 256
             for UVs in vt_uv[vtId]:
                 u, v = UVs
                 imageWriteInt(imgData_ptr, size, u, v, value)
@@ -291,17 +316,17 @@ def set_data_img(img, frameNum, vtNum, bufferData, vtIds):
 # ------------------MAIN-TEX-GENRATOR----------------------------#
 
 
-indexSize = [32, 64, 128, 256, 512, 1024]
+indexSize = [32, 64, 128, 256, 512, 1024, 2048]
 
 
 def generateTextures(shapeNode, start, end, size_index, path):
     vt_uv = vt_uv_map(shapeNode)  # result is UV lists map
-    name = shapeNode.name(fullPath=False)
+    # name = shapeNode.name()
     # print vt_uv
     data, vtIds = get_dis_buffer(start, end, shapeNode)
     index_img = create_index_img(indexSize[size_index])
-    set_index_img(index_img, vtIds, vt_uv)
-    index_img.save('%s%s_index.png' % (path, name))
+    set_index_img(shapeNode, index_img, vtIds, vt_uv)
+    index_img.save('%s_index.png' % (path))
 
     data = buffer_resort(data)
     vtId_size = len(vtIds)
@@ -309,7 +334,7 @@ def generateTextures(shapeNode, start, end, size_index, path):
     data_img_size = data_image_size(frameNum, vtId_size)
     data_img = create_data_img(data_img_size)
     set_data_img(data_img, frameNum, vtId_size, data, vtIds)
-    data_img.save('%s%s_data.png' % (path, name))
+    data_img.save('%s_data.png' % (path))
     return
 
 
