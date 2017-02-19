@@ -23,8 +23,8 @@ VertAnimToTex.main()
 ![unity_index_import](https://cloud.githubusercontent.com/assets/5509512/23100103/8974257c-f62c-11e6-9754-9c6fc24af0e9.PNG)
 ![unity_data_import](https://cloud.githubusercontent.com/assets/5509512/23100102/896f8026-f62c-11e6-81e3-15d21fdcd66f.PNG)
 
-* 3.In Unity, set the imported index and data texture as above.
-* 4.Use the shader file in the folder for the material. Put the index and data texture in the right slot.
+* 4.In Unity, set the imported index and data texture as above.
+* 5.Use the shader file in the folder for the material. Put the index and data texture in the right slot.
 * ** There are 3 preprocessor options in the shader file, to determine whether to use index data stored in the vertex color, 
     whether to use normal movement data and tangent movement data.
 
