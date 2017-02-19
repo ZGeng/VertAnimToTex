@@ -17,7 +17,7 @@ VertAnimToTex.main()
  
  * 1.After the window popout, select the mesh that with vertex animation. Input the animation start and end frame, 
    index texture size, set output path and texture name.
- * 2.Click export and wait for the data texture export process.
+ * 2.Click export and wait for the data texture export process.(It maybe slow for big model since the recalculation of tangent data)
  * 3.Export the model. (Do not change frame)
 
 ![unity_index_import](https://cloud.githubusercontent.com/assets/5509512/23100103/8974257c-f62c-11e6-9754-9c6fc24af0e9.PNG)
