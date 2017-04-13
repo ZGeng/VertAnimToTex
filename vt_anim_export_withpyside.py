@@ -6,7 +6,7 @@ import struct
 import pymel.core as pm
 from maya import OpenMaya
 import math
-from PySide import QtGui
+from PySide2 import QtGui
 pm_Color = pm.datatypes.Color
 QImage = QtGui.QImage
 

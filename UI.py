@@ -1,8 +1,8 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 import pymel.core as pm
 import maya.OpenMaya as om
 import maya.OpenMayaUI as omui
-from shiboken import wrapInstance
+from shiboken2 import wrapInstance
 import vt_anim_export_withpyside as vae
 import os
 
@@ -19,7 +19,7 @@ def get_sel_shape():
 
 def get_maya_window():
     main_window_ptr = omui.MQtUtil.mainWindow()
-    return wrapInstance(long(main_window_ptr), QtGui.QWidget)
+    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
 
 
 @QtCore.Slot(object)
@@ -38,38 +38,38 @@ def exportTexCallback(values):
 
 
 elementList = [
-    {"name": "meshLable", "type": QtGui.QLabel,
+    {"name": "meshLable", "type": QtWidgets.QLabel,
         "position": (0, 0, 1, 1), "arg": ["mesh"], "parent":"None"},
-    {"name": "objectLable", "type": QtGui.QLabel,
+    {"name": "objectLable", "type": QtWidgets.QLabel,
         "position": (0, 1, 1, 3), "arg": [" "], "parent":"None"},
-    {"name": "setting", "type": QtGui.QGroupBox,
+    {"name": "setting", "type": QtWidgets.QGroupBox,
      "position": (1, 0, 4, 4), "arg": ["Setting"], "parent":"None"},
-    {"name": "frameLable_1", "type": QtGui.QLabel,
+    {"name": "frameLable_1", "type": QtWidgets.QLabel,
         "position": (2, 0, 1, 1), "arg": [" Start Frame"], "parent":"setting"},
-    {"name": "startFrame", "type": QtGui.QSpinBox,
+    {"name": "startFrame", "type": QtWidgets.QSpinBox,
         "position": (2, 1, 1, 1), "arg": [], "parent":"setting"},
-    {"name": "frameLable_2", "type": QtGui.QLabel,
+    {"name": "frameLable_2", "type": QtWidgets.QLabel,
         "position": (2, 2, 1, 1), "arg": [" End Frame"], "parent":"setting"},
-    {"name": "endFrame", "type": QtGui.QSpinBox,
+    {"name": "endFrame", "type": QtWidgets.QSpinBox,
         "position": (2, 3, 1, 1), "arg": [], "parent":"setting"},
-    {"name": "indexTexSizeLable", "type": QtGui.QLabel,
+    {"name": "indexTexSizeLable", "type": QtWidgets.QLabel,
      "position": (3, 0, 1, 2), "arg": [" indexTexSize"], "parent":"setting"},
-    {"name": "indexTexSize", "type": QtGui.QComboBox,
+    {"name": "indexTexSize", "type": QtWidgets.QComboBox,
         "position": (3, 2, 1, 2), "arg": [], "parent":"setting"},
-    {"name": "fileDirLabel", "type": QtGui.QLabel,
+    {"name": "fileDirLabel", "type": QtWidgets.QLabel,
      "position": (4, 0, 1, 1), "arg": ["  Save As"], "parent":"setting"},
-    {"name": "fileDirButton", "type": QtGui.QPushButton,
+    {"name": "fileDirButton", "type": QtWidgets.QPushButton,
         "position": (4, 1, 1, 1), "arg": [''], "parent":"setting"},
-    {"name": "fileDir", "type": QtGui.QLineEdit,
+    {"name": "fileDir", "type": QtWidgets.QLineEdit,
      "position": (4, 2, 1, 2), "arg": [], "parent":"setting"},
-    {"name": "info", "type": QtGui.QLabel,
+    {"name": "info", "type": QtWidgets.QLabel,
      "position": (5, 0, 1, 2), "arg": ["......"], "parent":"None"},
-    {"name": "exportButton", "type": QtGui.QPushButton,
+    {"name": "exportButton", "type": QtWidgets.QPushButton,
      "position": (5, 2, 1, 2), "arg": ["Export"], "parent":"None"}
 ]
 
 
-class UILayout(QtGui.QMainWindow):
+class UILayout(QtWidgets.QMainWindow):
     export = QtCore.Signal(object)
 
     def setMesh(self, *args, **kwargs):
@@ -84,7 +84,7 @@ class UILayout(QtGui.QMainWindow):
         self.setWindowTitle('VertAnimToTex')
         self.setFixedSize(350, 200)
         self.elements = dict()
-        self.container = QtGui.QWidget(self)
+        self.container = QtWidgets.QWidget(self)
         self.exportedData = ["dagPath", 0, 10, 1, "filePath"]
         self.idx = om.MEventMessage.addEventCallback(
             "SelectionChanged", self.setMesh)
@@ -92,7 +92,7 @@ class UILayout(QtGui.QMainWindow):
 
     def createLayout(self, elementList):
 
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         for element in elementList:
             name = element["name"]
             pos = element["position"]
@@ -115,7 +115,7 @@ class UILayout(QtGui.QMainWindow):
         self.export.emit(self.exportedData)
 
     def dirOnClick(self):
-        path, _ = QtGui.QFileDialog.getSaveFileName(
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self, "Save File", os.getcwd())
         self.elements["fileDir"].setText(path)
         return path
@@ -137,7 +137,7 @@ def setupElement(uiWindow):
     uiWindow.elements["endFrame"].setMaximum(300)
     fileButton = uiWindow.elements["fileDirButton"]
     fileButton.setIcon(
-        fileButton.style().standardIcon(QtGui.QStyle.SP_DirIcon))
+        fileButton.style().standardIcon(QtWidgets.QStyle.SP_DirIcon))
     indexTexSize = uiWindow.elements["indexTexSize"]
     indexTexSize.addItems(["32*32", "64*64", "128*128",
                            "256*256", "512*512", "1024*1024","2048*2048"])
@@ -156,7 +156,7 @@ def setupEvent(uiWindow):
 
 
 def main():
-    # app = QtGui.QApplication([])
+    # app = QtWidgets.QApplication([])
     # assign a callback function
 
     win = UILayout(get_maya_window())
